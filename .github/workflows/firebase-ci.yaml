@@ -1,20 +1,38 @@
 on: [push, pull_request]
 jobs:
+  linting:
+    name: Check for linting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: npm ci && npm run check:style
   emulator_test:
+    needs: [linting]
     name: Run all tests using Firebase Emulator Suite
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: "12"
+          node-version: '12'
       - name: Install Firebase Emulator Suite
         run: npm install -g firebase-tools
       - name: Install dependencies
-        run: npm install
-        working-directory: src/
+        run: npm ci
       - name: Run all the tests
         run: firebase emulators:exec --project sponsorr-dev 'npm test'
-        working-directory: src/
         env:
           GCLOUD_PROJECT: sponsorr-dev
+  build_and_deploy:
+    needs: [emulator_test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install npm packages
+        run: npm ci
+      - name: Deploy to Firebase
+        uses: w9jds/firebase-action@master
+        with:
+          args: deploy --only functions
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

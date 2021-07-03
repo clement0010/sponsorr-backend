@@ -1,0 +1,10 @@
+lib
+node_modules
+*.log
+.husky
+firestore.rules
+.firebaserc
+.eslintignore
+.gitignore
+.prettierignore
+commitlint.config.js
