@@ -15,7 +15,8 @@
     "test": "mocha src/test/** -r ts-node/register --timeout 5000 --exit",
     "test:dev": "firebase emulators:exec 'npm test'",
     "test:ci": "npm run build && firebase emulators:exec 'npm test'",
-    "deploy": "firebase deploy functions, firestore:rules",
+    "deploy": "firebase deploy --only functions",
+    "deploy:ci": "firebase deploy --only functions -f --non-interactive",
     "logs": "firebase functions:log"
   },
   "engines": {
