@@ -1,5 +1,5 @@
-Jul 04, 2021 7:01:43 AM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketServer start
-INFO: Started WebSocket server on ws://127.0.0.1:41525
+Jul 04, 2021 7:21:26 AM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketServer start
+INFO: Started WebSocket server on ws://127.0.0.1:36879
 API endpoint: http://127.0.0.1:8080
 If you are using a library that supports the FIRESTORE_EMULATOR_HOST environment variable, run:
 
@@ -7,13 +7,13 @@ If you are using a library that supports the FIRESTORE_EMULATOR_HOST environment
 
 Dev App Server is now running.
 
-Jul 04, 2021 7:01:47 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+Jul 04, 2021 7:21:29 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
 INFO: Detected non-HTTP/2 connection.
-Jul 04, 2021 7:01:47 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+Jul 04, 2021 7:21:29 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
 INFO: Detected HTTP/2 connection.
-Jul 04, 2021 7:01:48 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+Jul 04, 2021 7:21:30 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
 INFO: Detected HTTP/2 connection.
-Jul 04, 2021 7:01:48 AM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
+Jul 04, 2021 7:21:30 AM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
 INFO: operation failed: 
 false for 'update' @ L7
 com.google.cloud.datastore.core.exception.DatastoreException: 
@@ -44,7 +44,7 @@ false for 'update' @ L7
 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
 	at java.lang.Thread.run(Thread.java:748)
 
-Jul 04, 2021 7:01:48 AM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
+Jul 04, 2021 7:21:30 AM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
 INFO: operation failed: 
 false for 'update' @ L7
 com.google.cloud.datastore.core.exception.DatastoreException: 
@@ -75,11 +75,11 @@ false for 'update' @ L7
 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
 	at java.lang.Thread.run(Thread.java:748)
 
-Jul 04, 2021 7:01:48 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+Jul 04, 2021 7:21:30 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
 INFO: Detected HTTP/2 connection.
-Jul 04, 2021 7:01:48 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+Jul 04, 2021 7:21:30 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
 INFO: Detected non-HTTP/2 connection.
-Jul 04, 2021 7:01:49 AM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
+Jul 04, 2021 7:21:31 AM com.google.cloud.datastore.emulator.impl.util.WrappedStreamObserver onError
 INFO: operation failed: 
 false for 'update' @ L12
 com.google.cloud.datastore.core.exception.DatastoreException: 
@@ -110,7 +110,7 @@ false for 'update' @ L12
 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
 	at java.lang.Thread.run(Thread.java:748)
 
-Jul 04, 2021 7:01:49 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+Jul 04, 2021 7:21:31 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
 INFO: Detected non-HTTP/2 connection.
 *** shutting down gRPC server since JVM is shutting down
 *** server shut down
