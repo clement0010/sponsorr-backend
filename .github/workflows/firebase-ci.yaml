@@ -20,9 +20,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Run all the tests
-        run: npm run test:ci
+        run: npm run test:ci --token "$FIREBASE_TOKEN"
         env:
-          GCLOUD_PROJECT: sponsorr-dev
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
   build_and_deploy:
     needs: [emulator_test]
     runs-on: ubuntu-latest
@@ -31,6 +31,6 @@ jobs:
       - name: Install npm packages
         run: npm ci
       - name: Deploy to Firebase
-        run: npm run deploy --token "$FIREBASE_TOKEN"
+        run: npm run deploy:ci --token "$FIREBASE_TOKEN"
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
