@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "prod": "sponsorr-prod",
+    "default": "sponsorr-prod",
+    "dev": "sponsorr-dev"
+  }
+}
