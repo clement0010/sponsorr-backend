@@ -37,6 +37,6 @@ jobs:
       - name: Install npm packages
         run: npm ci
       - name: Deploy to Firebase
-        run: firebase deploy --only functions,firestore:rules --token '$FIREBASE_TOKEN' -f --non-interactive
+        run: firebase deploy --only functions,firestore:rules --project sponsorr-prod --token '$FIREBASE_TOKEN' -f --non-interactive
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
