@@ -14,9 +14,7 @@
     "start": "npm run shell",
     "test": "mocha src/test/** -r ts-node/register --timeout 5000 --exit",
     "test:dev": "firebase emulators:exec 'npm test'",
-    "test:ci": "npm run build && firebase emulators:exec --project sponsorr-dev --token '$FIREBASE_TOKEN' 'npm test'",
-    "deploy": "firebase deploy --only functions",
-    "deploy:ci": "firebase deploy --only functions --token '$FIREBASE_TOKEN' -f --non-interactive",
+    "deploy": "firebase deploy --only functions,firestore:rules",
     "logs": "firebase functions:log"
   },
   "engines": {
