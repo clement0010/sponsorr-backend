@@ -30,7 +30,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install npm packages
-        run: npm install -g firebase-tools && npm ci
+        run: npm install firebase-tools && npm ci
       - name: Deploy to Firebase
         run: firebase deploy --only functions,firestore:rules --token '$FIREBASE_TOKEN' -f --non-interactive
         env:
