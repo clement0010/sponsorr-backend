@@ -12,7 +12,7 @@
     "serve": "concurrently \"npm run build:dev\" \"npm run start:emulators\"",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
-    "test": "mocha src/test/** -r ts-node/register --timeout 5000 --exit",
+    "test": "mocha src/test/** -r ts-node/register --reporter src/test/reporter.ts --timeout 5000 --exit",
     "test:dev": "firebase emulators:exec 'npm test'",
     "deploy": "firebase deploy --only functions,firestore:rules",
     "logs": "firebase functions:log"
