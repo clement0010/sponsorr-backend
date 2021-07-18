@@ -1,3 +1,3 @@
-import { addMessage } from './message';
+import { matchingService } from './eventMatching';
 
-export const emailService = addMessage;
+export const matchService = matchingService;
