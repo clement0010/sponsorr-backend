@@ -1,29 +1,14 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
+import * as firebase from '@firebase/rules-unit-testing';
+import { firestore } from 'firebase-admin';
+import { eventOrganiser1Auth, eventOrganiser2Auth, sponsor1Auth, seedEvents } from './db.fixtures';
+
 const TEST_FIREBASE_PROJECT_ID = 'test-firestore-rules-project';
 
 // TODO: Change this to your real Firebase Project ID
-// const REAL_FIREBASE_PROJECT_ID = process.env.GCLOUD_PROJECT || 'sponsorr-dev';
-
-import * as firebase from '@firebase/rules-unit-testing';
-import { firestore } from 'firebase-admin';
-
-const seedItems: Record<string, unknown> = {
-  chocolate: 4.99,
-  'coffee beans': 12.99,
-  milk: 5.99,
-};
-
-const aliceAuth = {
-  uid: 'alice',
-  email: 'alice@example.com',
-};
-
-const bobAuth = {
-  uid: 'bob',
-  email: 'bob@example.com',
-};
+// const REAL_FIREBASE_PROJECT_ID = process.env.PROJECT_ID || 'sponsorr-dev';
 
 before(async () => {
   // Discover which emulators are running and where by using the Emulator Hub
@@ -50,18 +35,25 @@ after(() => {
 });
 
 // Unit test the security rules
-describe('shopping carts', () => {
-  const aliceDb = firebase
+describe('Unit Testing Firebase rules', () => {
+  const sponsor1 = firebase
     .initializeTestApp({
       projectId: TEST_FIREBASE_PROJECT_ID,
-      auth: aliceAuth,
+      auth: sponsor1Auth,
     })
     .firestore();
 
-  const bobDb = firebase
+  const eventOrganiser1 = firebase
     .initializeTestApp({
       projectId: TEST_FIREBASE_PROJECT_ID,
-      auth: bobAuth,
+      auth: eventOrganiser1Auth,
+    })
+    .firestore();
+
+  const eventOrganiser2 = firebase
+    .initializeTestApp({
+      projectId: TEST_FIREBASE_PROJECT_ID,
+      auth: eventOrganiser2Auth,
     })
     .firestore();
 
@@ -75,172 +67,92 @@ describe('shopping carts', () => {
     await resetData(admin, TEST_FIREBASE_PROJECT_ID);
   });
 
-  it('can be created and updated by the cart owner', async () => {
-    // Alice can create her own cart
-    await firebase.assertSucceeds(
-      aliceDb.doc('carts/alicesCart').set({
-        ownerUID: 'alice',
-        total: 0,
-      }),
-    );
-
-    // Bob can't create Alice's cart
-    await firebase.assertFails(
-      bobDb.doc('carts/alicesCart').set({
-        ownerUID: 'alice',
-        total: 0,
-      }),
-    );
-
-    // Alice can update her own cart with a new total
-    await firebase.assertSucceeds(
-      aliceDb.doc('carts/alicesCart').update({
-        total: 1,
-      }),
-    );
-
-    // Bob can't update Alice's cart with a new total
-    await firebase.assertFails(
-      bobDb.doc('carts/alicesCart').update({
-        total: 1,
-      }),
-    );
+  describe('User authentication', () => {
+    it('can be created by user', async () => {
+      // Sponsor1 create her own user account
+      await firebase.assertSucceeds(
+        sponsor1
+          .collection('users')
+          .doc(sponsor1Auth.uid)
+          .set({
+            ...sponsor1Auth,
+          }),
+      );
+      // Event Organiser 1 create her own user account
+      await firebase.assertSucceeds(
+        eventOrganiser1
+          .collection('users')
+          .doc(eventOrganiser1Auth.uid)
+          .set({
+            ...eventOrganiser1Auth,
+          }),
+      );
+      // Event Organiser 2 create her own user account
+      await firebase.assertSucceeds(
+        eventOrganiser2
+          .collection('users')
+          .doc(eventOrganiser2Auth.uid)
+          .set({
+            ...eventOrganiser2Auth,
+          }),
+      );
+    });
   });
 
-  it('can be read only by the cart owner', async () => {
-    // Setup: Create Alice's cart as admin
-    await admin.doc('carts/alicesCart').set({
-      ownerUID: 'alice',
-      total: 0,
+  describe('Events', () => {
+    const eventOrganiser1Collection = eventOrganiser1.collection('events');
+    const eventOrganiser2Collection = eventOrganiser2.collection('events');
+    const sponsor1Collection = sponsor1.collection('events');
+
+    it('can be created and updated by the user', async () => {
+      // Sponsor1 fails to create event
+      await firebase.assertFails(
+        sponsor1Collection.add({
+          ...seedEvents[0],
+        }),
+      );
+
+      // EventOrganiser1 successfully to create event
+      await firebase.assertSucceeds(
+        eventOrganiser1Collection.doc('event1').set({
+          ...seedEvents[0],
+        }),
+      );
+
+      // EventOrganiser2 successfully to create event
+      await firebase.assertSucceeds(
+        eventOrganiser2Collection.doc('event2').set({
+          ...seedEvents[1],
+        }),
+      );
+
+      // EventOrganiser2 can update her own cart with a new title
+      await firebase.assertSucceeds(
+        eventOrganiser2Collection.doc('event2').update({
+          title: 'Hello World',
+        }),
+      );
+
+      // EventOrganiser1 can't update EventOrganiser2's cart with a new title
+      await firebase.assertFails(
+        eventOrganiser1Collection.doc('event2').update({
+          title: 'Bye World',
+        }),
+      );
     });
 
-    // Alice can read her own cart
-    await firebase.assertSucceeds(aliceDb.doc('carts/alicesCart').get());
+    it('can be read only by the event owner', async () => {
+      // Sponsor1 cannot read unmatched event
+      await firebase.assertFails(sponsor1Collection.doc('event1').get());
 
-    // Bob can't read Alice's cart
-    await firebase.assertFails(bobDb.doc('carts/alicesCart').get());
-  });
-});
+      // EventOrganiser1 can read her own event
+      await firebase.assertSucceeds(eventOrganiser1Collection.doc('event1').get());
 
-describe('shopping cart items', async () => {
-  const admin = firebase
-    .initializeAdminApp({
-      projectId: TEST_FIREBASE_PROJECT_ID,
-    })
-    .firestore();
-
-  const aliceDb = firebase
-    .initializeTestApp({
-      projectId: TEST_FIREBASE_PROJECT_ID,
-      auth: aliceAuth,
-    })
-    .firestore();
-
-  const bobDb = firebase
-    .initializeTestApp({
-      projectId: TEST_FIREBASE_PROJECT_ID,
-      auth: bobAuth,
-    })
-    .firestore();
-
-  before(async () => {
-    // Create Alice's cart
-    const aliceCartRef = admin.doc('carts/alicesCart');
-    await aliceCartRef.set({
-      ownerUID: 'alice',
-      total: 0,
+      // EventOrganiser2 can't read EventOrganiser1's event
+      await firebase.assertFails(eventOrganiser2Collection.doc('event1').get());
     });
-
-    // Create items subcollection in Alice's Cart
-    const alicesItemsRef = aliceCartRef.collection('items');
-    for (const name of Object.keys(seedItems)) {
-      await alicesItemsRef.doc(name).set({ value: seedItems[name] });
-    }
-  });
-
-  after(async () => {
-    await resetData(admin, TEST_FIREBASE_PROJECT_ID);
-  });
-
-  it('can be read only by the cart owner', async () => {
-    // Alice can read items in her own cart
-    await firebase.assertSucceeds(aliceDb.doc('carts/alicesCart/items/milk').get());
-
-    // Bob can't read items in alice's cart
-    await firebase.assertFails(bobDb.doc('carts/alicesCart/items/milk').get());
-  });
-
-  it('can be added only by the cart owner', async () => {
-    // Alice can add an item to her own cart
-    await firebase.assertSucceeds(
-      aliceDb.doc('carts/alicesCart/items/lemon').set({
-        name: 'lemon',
-        price: 0.99,
-      }),
-    );
-
-    // Bob can't add an item to alice's cart
-    await firebase.assertFails(
-      bobDb.doc('carts/alicesCart/items/lemon').set({
-        name: 'lemon',
-        price: 0.99,
-      }),
-    );
   });
 });
-
-// describe('adding an item to the cart recalculates the cart total. ', () => {
-//   const admin = firebase
-//     .initializeAdminApp({
-//       projectId: REAL_FIREBASE_PROJECT_ID,
-//     })
-//     .firestore();
-
-//   after(async () => {
-//     await resetData(admin, REAL_FIREBASE_PROJECT_ID);
-//   });
-
-//   it('should sum the cost of their items', async () => {
-//     if (REAL_FIREBASE_PROJECT_ID === 'changeme') {
-//       throw new Error('Please change the REAL_FIREBASE_PROJECT_ID at the top of the test file');
-//     }
-
-//     const db = firebase.initializeAdminApp({ projectId: REAL_FIREBASE_PROJECT_ID }).firestore();
-
-//     // Setup: Initialize cart
-//     const aliceCartRef = db.doc('carts/alice');
-//     await aliceCartRef.set({ ownerUID: 'alice', totalPrice: 0 });
-
-//     //  Trigger `calculateCart` by adding items to the cart
-//     const aliceItemsRef = aliceCartRef.collection('items');
-//     await aliceItemsRef.doc('doc1').set({ name: 'nectarine', price: 2.99 });
-//     await aliceItemsRef.doc('doc2').set({ name: 'grapefruit', price: 6.99 });
-
-//     // Listen for every update to the cart. Every time an item is added to
-//     // the cart's subcollection of items, the function updates `totalPrice`
-//     // and `itemCount` attributes on the cart.
-//     // Returns a function that can be called to unsubscribe the listener.
-//     await new Promise<void>((resolve) => {
-//       const unsubscribe = aliceCartRef.onSnapshot((snap) => {
-//         // If the function worked, these will be cart's final attributes.
-//         const expectedCount = 2;
-//         const expectedTotal = 9.98;
-
-//         // When the `itemCount`and `totalPrice` match the expectations for the
-//         // two items added, the promise resolves, and the test passes.
-//         if (
-//           snap.exists &&
-//           snap.data()?.itemCount === expectedCount &&
-//           snap.data()?.totalPrice === expectedTotal
-//         ) {
-//           // Call the function returned by `onSnapshot` to unsubscribe from updates
-//           unsubscribe();
-//           resolve();
-//         }
-//       });
-//     });
-//   });
-// });
 
 /**
  * Clear the data in the Firestore emulator without triggering any of our

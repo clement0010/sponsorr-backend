@@ -1,21 +1,44 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // User's cart metadata
-    match /carts/{cartID} {
-      allow create: if request.auth.uid == request.resource.data.ownerUID;
-      allow read, update, delete: if request.auth.uid == resource.data.ownerUID;
+    match /users/{userId} {
+      // Only allow user to read, write and delete their own data
+      allow read, write, delete: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null;
     }
 
-    // Items inside the user's cart
-    match /carts/{cartID}/items/{itemID} {
-      allow read, write: if get(/databases/$(database)/documents/carts/$(cartID)).data.ownerUID == request.auth.uid;
+    match /events/{eventId} {
+      // Only allow user to read event if they are authenticated and their own event or if they are a matched sponsor
+      allow read: if (request.auth != null && request.auth.uid == resource.data.userId) ||
+                      isMatched(request.auth.uid, eventId);
+      
+      // Only allow user to create event if they are event organiser
+      allow create: if request.auth != null && validRole(request.auth.uid, "EventOrganiser");
+
+      // Only allow user to write and delete their own event
+      allow write, delete: if request.auth != null && request.auth.uid == resource.data.userId;
     }
 
-    // All items available in the store. Users can read
-    // items but never write them.
-    match /items/{itemID} {
-      allow read: if true;
+    match /matches/{matchId} {
+      // Only allow user to read matches if they are authenticated and they are the matched sponsor
+      // or the matched event belongs to the user
+      allow read: if (request.auth != null && request.auth.uid == resource.data.userId) ||
+                    get(/databases/$(database)/documents/events/$(resource.data.eventId)).data.userId == request.auth.uid;
+      
+      // Only allow Sponsor to create, write and delete a match 
+      allow create, write, delete: if request.auth != null && 
+                    get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Sponsor';
+    }
+
+    function isMatched(userId, eventId) {
+      let junctionId = userId + "#" + eventId;
+      let path = /databases/$(database)/documents/matches/$(junctionId);
+      return exists(path);
+    }
+
+    function validRole(userId, role) {
+      return get(/databases/$(database)/documents/users/$(userId)).data.role == role
     }
   }
+
 }
