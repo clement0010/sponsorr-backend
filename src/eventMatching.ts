@@ -28,7 +28,7 @@ export const matchingService = region('asia-southeast2')
       const organiserDetails = await getUserDetails(eventDetails?.userId || '');
 
       const sponsorEmailNotificationObject = buildEmailNotificationObject(
-        userId || '',
+        eventDetails?.userId || '',
         {
           username: sponsorDetails?.name || '',
           sponsorName: sponsorDetails?.name || '',
@@ -40,7 +40,7 @@ export const matchingService = region('asia-southeast2')
         },
       );
       const organiserEmailNotificationObject = buildEmailNotificationObject(
-        eventDetails?.userId || '',
+        userId || '',
         {
           username: organiserDetails?.name || '',
           sponsorName: sponsorDetails?.name || '',
