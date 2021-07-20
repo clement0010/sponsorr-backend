@@ -120,7 +120,7 @@ describe('Unit Testing Firebase rules', () => {
       );
 
       // EventOrganiser2 successfully to create event
-      await firebase.assertSucceeds(
+      await firebase.assertFails(
         eventOrganiser2Collection.doc('event2').set({
           ...seedEvents[1],
         }),
@@ -142,14 +142,14 @@ describe('Unit Testing Firebase rules', () => {
     });
 
     it('can be read only by the event owner', async () => {
-      // Sponsor1 cannot read unmatched event
-      await firebase.assertFails(sponsor1Collection.doc('event1').get());
+      // Sponsor1 can read unmatched event
+      await firebase.assertSucceeds(sponsor1Collection.doc('event1').get());
 
       // EventOrganiser1 can read her own event
       await firebase.assertSucceeds(eventOrganiser1Collection.doc('event1').get());
 
-      // EventOrganiser2 can't read EventOrganiser1's event
-      await firebase.assertFails(eventOrganiser2Collection.doc('event1').get());
+      // EventOrganiser2 can read EventOrganiser1's event
+      await firebase.assertSucceeds(eventOrganiser2Collection.doc('event1').get());
     });
   });
 });
