@@ -2,20 +2,21 @@ import { firestore } from 'firebase-admin';
 
 import {
   admin,
+  ConfirmationEmailObject,
+  db,
   EventDetailsDbItem,
-  EventStatus,
+  EventStatusEnum,
+  generateEvents,
   MatchedEmailNotificationObject,
   UserDetailsDbItem,
 } from './';
 import { log } from './config';
 
-const db = admin.firestore();
-
 export const updateEventStatusToMatched = async (eventId: string): Promise<void> => {
   try {
     log('info', 'Updating event status in db');
     await db.doc(`events/${eventId}`).update({
-      status: EventStatus.Matched,
+      status: EventStatusEnum.Matched,
       matches: firestore.FieldValue.increment(1),
     });
     log('info', 'Successfully updated event status in db');
@@ -26,7 +27,7 @@ export const updateEventStatusToMatched = async (eventId: string): Promise<void>
 };
 
 export const createEmailRequestToDb = async (
-  emailNotificationObject: MatchedEmailNotificationObject,
+  emailNotificationObject: MatchedEmailNotificationObject | ConfirmationEmailObject,
 ): Promise<void> => {
   try {
     log('info', 'Creating email request in db', { emailNotificationObject });
@@ -69,6 +70,51 @@ export const getEventDetails = async (eventId: string): Promise<EventDetailsDbIt
     return snapshot.data() as EventDetailsDbItem;
   } catch (error) {
     log('error', 'Error getting event details from db');
+    throw error;
+  }
+};
+
+export const populateUserDatabase = async (userDetails: Record<string, unknown>): Promise<void> => {
+  try {
+    log('info', 'Save user details to db', { userDetails });
+    const uid = userDetails.uid as string;
+    await admin.auth().createUser({
+      uid,
+      email: userDetails.email as string,
+      password: 'test1234',
+    });
+    delete userDetails['uid'];
+    delete userDetails['email_verified'];
+    await db
+      .collection('users')
+      .doc(uid as string)
+      .set(userDetails);
+    log('info', 'Successfully save user details to db');
+  } catch (error) {
+    log('error', 'Error saving user details to db');
+    throw error;
+  }
+};
+
+export const populateEventDatabase = async (
+  organiserDetails: Record<string, unknown>,
+): Promise<void> => {
+  try {
+    log('info', 'Save event details to db', { organiserDetails });
+    const batch = db.batch();
+
+    const collection = db.collection('events');
+
+    generateEvents(organiserDetails.uid as string, 100).forEach((event) => {
+      const document = collection.doc(event.uuid || '');
+      delete event['uuid'];
+      batch.set(document, event);
+    });
+    await batch.commit();
+
+    log('info', 'Successfully save event details to db');
+  } catch (error) {
+    log('error', 'Error saving event details to db');
     throw error;
   }
 };
