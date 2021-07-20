@@ -1,34 +1,35 @@
-import { region } from 'firebase-functions';
 import {
   buildEmailNotificationObject,
   createEmailRequestToDb,
+  functions,
   getEventDetails,
   getUserDetails,
   log,
+  Match,
   Status,
   updateEventStatusToMatched,
 } from './common';
 
-export const matchingService = region('asia-southeast2')
-  .firestore.document('matches/{matchId}')
+export const matchingService = functions.firestore
+  .document('matches/{matchId}')
   .onWrite(async (change) => {
     log('info', 'Incoming matching service request', {
       data: change.after.data(),
     });
 
-    const newValue = change.after.data();
-
-    if (!newValue) return;
+    if (change.before.data() === change.after.data()) return;
+    const newValue = change.after.data() as Match;
 
     const { eventId, userId, status, sponsorStatus, organiserStatus } = newValue;
 
+    // Cron Job matched
     if (sponsorStatus === Status.Pending && organiserStatus === Status.Pending) {
       const sponsorDetails = await getUserDetails(userId);
       const eventDetails = await getEventDetails(eventId);
       const organiserDetails = await getUserDetails(eventDetails?.userId || '');
 
       const sponsorEmailNotificationObject = buildEmailNotificationObject(
-        eventDetails?.userId || '',
+        userId || '',
         {
           username: sponsorDetails?.name || '',
           sponsorName: sponsorDetails?.name || '',
@@ -40,7 +41,7 @@ export const matchingService = region('asia-southeast2')
         },
       );
       const organiserEmailNotificationObject = buildEmailNotificationObject(
-        userId || '',
+        eventDetails?.userId || '',
         {
           username: organiserDetails?.name || '',
           sponsorName: sponsorDetails?.name || '',
@@ -56,14 +57,16 @@ export const matchingService = region('asia-southeast2')
       return;
     }
 
+    // Notify organiser about the match
     if (organiserStatus === Status.Pending) {
       const sponsorDetails = await getUserDetails(userId);
       const eventDetails = await getEventDetails(eventId);
+      const organiserDetails = await getUserDetails(eventDetails?.userId || '');
 
       const emailNotificationObject = buildEmailNotificationObject(
         eventDetails?.userId || '',
         {
-          username: sponsorDetails?.name || '',
+          username: organiserDetails?.name || '',
           sponsorName: sponsorDetails?.name || '',
           eventName: eventDetails?.title || '',
         },
