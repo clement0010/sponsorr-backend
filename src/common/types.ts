@@ -27,6 +27,7 @@ export interface MatchedEmailParams {
   username: string;
   sponsorName: string;
   eventName: string;
+  eventUrl: string;
 }
 
 export interface ConfirmationEmailObject extends EmailIdentifier {

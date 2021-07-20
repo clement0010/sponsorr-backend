@@ -19,7 +19,7 @@ app.post('/', async (req: express.Request, res: express.Response) => {
   // Grab the text parameter.
   log('info', 'Incoming populate db request');
   try {
-    Promise.all([
+    await Promise.all([
       populateUserDatabase(eventOrganiser1Auth),
       populateUserDatabase(eventOrganiser2Auth),
       populateUserDatabase(sponsor1Auth),

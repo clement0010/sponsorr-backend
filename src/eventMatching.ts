@@ -1,4 +1,5 @@
 import {
+  APP_BASE_URL,
   buildEmailNotificationObject,
   createEmailRequestToDb,
   functions,
@@ -28,12 +29,15 @@ export const matchingService = functions.firestore
       const eventDetails = await getEventDetails(eventId);
       const organiserDetails = await getUserDetails(eventDetails?.userId || '');
 
+      const eventUrl = `${APP_BASE_URL}event/${eventId}`;
+
       const sponsorEmailNotificationObject = buildEmailNotificationObject(
         userId || '',
         {
           username: sponsorDetails?.name || '',
           sponsorName: sponsorDetails?.name || '',
           eventName: eventDetails?.title || '',
+          eventUrl,
         },
         {
           path: eventDetails?.documents[0] || '',
@@ -46,6 +50,7 @@ export const matchingService = functions.firestore
           username: organiserDetails?.name || '',
           sponsorName: sponsorDetails?.name || '',
           eventName: eventDetails?.title || '',
+          eventUrl,
         },
         {
           filename: 'Event Attachment.pdf',
@@ -63,12 +68,15 @@ export const matchingService = functions.firestore
       const eventDetails = await getEventDetails(eventId);
       const organiserDetails = await getUserDetails(eventDetails?.userId || '');
 
+      const eventUrl = `${APP_BASE_URL}event/${eventId}`;
+
       const emailNotificationObject = buildEmailNotificationObject(
         eventDetails?.userId || '',
         {
           username: organiserDetails?.name || '',
           sponsorName: sponsorDetails?.name || '',
           eventName: eventDetails?.title || '',
+          eventUrl,
         },
         {
           path: eventDetails?.documents[0] || '',

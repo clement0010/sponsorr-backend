@@ -16,7 +16,7 @@ app.get('/', async (req: express.Request, res: express.Response) => {
     const { id } = req.query;
 
     const userRecord = await admin.auth().updateUser(id as string, {
-      emailVerified: false,
+      emailVerified: true,
     });
     log('info', 'Successfully verify email', { userRecord });
 
