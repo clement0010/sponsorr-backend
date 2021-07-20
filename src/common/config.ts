@@ -27,10 +27,20 @@ export enum Status {
   Pending = 'pending',
 }
 
-export enum EventStatus {
+export enum EventStatusEnum {
   Published = 'published',
   Draft = 'draft',
   Matched = 'matched',
 }
 
 export const EMAIL_SOURCE = 'Sponsorr! <clement.jdp15@gmail.com>';
+
+export const BASE_URL =
+  process.env.GCLOUD_PROJECT === 'sponsorr-dev'
+    ? 'https://asia-southeast2-sponsorr-dev.cloudfunctions.net/'
+    : 'https://asia-southeast2-sponsorr-prod.cloudfunctions.net/';
+
+export const APP_BASE_URL =
+  process.env.GCLOUD_PROJECT === 'sponsorr-dev'
+    ? 'http://localhost:8080/'
+    : 'https://sponsorr-prod.web.app/';
