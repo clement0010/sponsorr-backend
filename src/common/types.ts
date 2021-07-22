@@ -80,13 +80,23 @@ export interface Profile extends User {
 export interface EventOrganiser extends Profile {
   role: Role;
 }
-export interface Sponsor extends Profile {
-  role: Role;
+
+export interface Subscription {
+  budget: Budget;
+  eventSize: number;
+  demographic: string[];
 }
+export interface Sponsor extends Profile {
+  id: string;
+  role: Role;
+  subscription: Subscription;
+}
+
+export type Sponsors = Sponsor[];
 
 export type EventStatus = 'draft' | 'published' | 'matched';
 
-interface Budget {
+export interface Budget {
   maximum: number;
   minimum: number;
 }
@@ -103,7 +113,7 @@ export interface SponsorRequest {
 }
 
 export interface BaseSponsorEvent {
-  budget: Budget;
+  budget: number;
   clicks: number;
   createdAt: number;
   date: EventDate;
@@ -162,10 +172,12 @@ export type Messages = Message[];
 export interface Match {
   userId: string;
   eventId: string;
+  organiserId: string;
   status: MatchStatus;
   organiserStatus: MatchStatus;
   sponsorStatus: MatchStatus;
-  event: SponsorEvent;
+  createdAt: number;
+  event?: SponsorEvent;
   messages?: Messages;
 }
 
