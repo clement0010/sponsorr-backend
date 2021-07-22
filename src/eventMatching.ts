@@ -14,21 +14,20 @@ import {
 
 export const matchNotificationService = functions.firestore
   .document('matches/{matchId}')
-  .onWrite(async (change) => {
+  .onCreate(async (item) => {
     log('info', 'Incoming match notification request', {
-      data: change.after.data(),
+      data: item.data(),
     });
 
-    if (change.before.data() === change.after.data()) return;
-    const newValue = change.after.data() as Match;
+    const newValue = item.data() as Match;
 
-    const { eventId, userId, status, sponsorStatus, organiserStatus } = newValue;
+    const { eventId, userId, sponsorStatus, organiserStatus, organiserId } = newValue;
 
     // Cron Job matched
     if (sponsorStatus === Status.Pending && organiserStatus === Status.Pending) {
       const sponsorDetails = await getUserDetails(userId);
       const eventDetails = await getEventDetails(eventId);
-      const organiserDetails = await getUserDetails(eventDetails?.userId || '');
+      const organiserDetails = await getUserDetails(organiserId);
 
       const eventUrl = `${APP_BASE_URL}event/${eventId}`;
 
@@ -90,9 +89,19 @@ export const matchNotificationService = functions.firestore
       return;
     }
 
+    return;
+  });
+
+export const matchStatusTrigger = functions.firestore
+  .document('matches/{matchId}')
+  .onWrite(async (change) => {
+    if (change.before.data() === change.after.data()) return;
+    const newValue = change.after.data() as Match;
+
+    const { eventId, status } = newValue;
+
     if (status === Status.Accepted) {
       await updateEventStatusToMatched(eventId);
       return;
     }
-    return;
   });
