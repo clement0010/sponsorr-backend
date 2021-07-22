@@ -11,6 +11,8 @@ import {
   UserDetailsDbItem,
 } from './';
 import { log } from './config';
+import { Matches, SponsorEventDbItems, Sponsors } from './types';
+import { parseUserEventId } from './utils';
 
 export const updateEventStatusToMatched = async (eventId: string): Promise<void> => {
   try {
@@ -22,6 +24,20 @@ export const updateEventStatusToMatched = async (eventId: string): Promise<void>
     log('info', 'Successfully updated event status in db');
   } catch (error) {
     log('error', 'Error updating event status in db');
+    throw error;
+  }
+};
+
+export const updateEventPairCount = async (eventId: string): Promise<void> => {
+  try {
+    log('info', 'Updating event pair count in db');
+    await db.doc(`events/${eventId}`).update({
+      pairs: firestore.FieldValue.increment(1),
+    });
+
+    log('info', 'Successfully updated pair count in db');
+  } catch (error) {
+    log('error', 'Error updating pair count in db');
     throw error;
   }
 };
@@ -115,6 +131,84 @@ export const populateEventDatabase = async (
     log('info', 'Successfully save event details to db');
   } catch (error) {
     log('error', 'Error saving event details to db');
+    throw error;
+  }
+};
+
+export const getAllEventFromDb = async (): Promise<SponsorEventDbItems> => {
+  try {
+    log('info', 'Getting all events from db');
+    const snapshot = await db.collection('events').where('subscribed', '==', true).get();
+    log('info', 'Successfully get all events from db');
+
+    return snapshot.docs.map((doc) => {
+      return {
+        ...doc.data(),
+        eventId: doc.id,
+      };
+    }) as SponsorEventDbItems;
+  } catch (error) {
+    log('error', 'Error get all events from db');
+    throw error;
+  }
+};
+
+export const getAllSponsorsFromDb = async (): Promise<Sponsors> => {
+  try {
+    log('info', 'Getting all sponsors from db');
+    const snapshot = await db
+      .collection('users')
+      .where('subscribed', '==', true)
+      .where('role', '==', 'Sponsor')
+      .select('subscription')
+      .get();
+    log('info', 'Successfully get all sponsors db');
+
+    return snapshot.docs.map((doc) => {
+      return {
+        id: doc.id,
+        ...doc.data(),
+      };
+    }) as Sponsors;
+  } catch (error) {
+    log('error', 'Error get all sponsors from db');
+    throw error;
+  }
+};
+
+export const getAllMatchesIdFromDb = async (): Promise<string[]> => {
+  try {
+    log('info', 'Getting all matches from db');
+    const snapshot = await db.collection('matches').get();
+    log('info', 'Successfully get all matches db');
+
+    return snapshot.docs.map((doc) => doc.id);
+  } catch (error) {
+    log('error', 'Error get all matches from db');
+    throw error;
+  }
+};
+
+export const saveMatchesToDb = async (matches: Matches): Promise<void> => {
+  try {
+    log('info', 'Save matched sponsor and events to db', { matches });
+    const batch = db.batch();
+
+    const collection = db.collection('matches');
+
+    matches.forEach((match) => {
+      const { userId, eventId } = match;
+      const matchId = parseUserEventId(userId, eventId);
+      const document = collection.doc(matchId);
+
+      batch.set(document, match);
+    });
+
+    await batch.commit();
+
+    log('info', 'Successfully save matched sponsor and events to db');
+  } catch (error) {
+    log('error', 'Error saving matched sponsor and events to db');
     throw error;
   }
 };
