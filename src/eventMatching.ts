@@ -8,13 +8,14 @@ import {
   log,
   Match,
   Status,
+  updateEventPairCount,
   updateEventStatusToMatched,
 } from './common';
 
-export const matchingService = functions.firestore
+export const matchNotificationService = functions.firestore
   .document('matches/{matchId}')
   .onWrite(async (change) => {
-    log('info', 'Incoming matching service request', {
+    log('info', 'Incoming match notification request', {
       data: change.after.data(),
     });
 
@@ -63,7 +64,9 @@ export const matchingService = functions.firestore
     }
 
     // Notify organiser about the match
-    if (organiserStatus === Status.Pending) {
+    if (sponsorStatus === Status.Accepted && organiserStatus === Status.Pending) {
+      await updateEventPairCount(eventId);
+
       const sponsorDetails = await getUserDetails(userId);
       const eventDetails = await getEventDetails(eventId);
       const organiserDetails = await getUserDetails(eventDetails?.userId || '');
