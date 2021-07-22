@@ -5,7 +5,7 @@ import { BaseSponsorEvent, Profile, Role, SponsorEvents } from '../common';
 const ONE_DAY = 60 * 60 * 24;
 
 const { number, boolean, uuid } = faker.datatype;
-const { arrayElements } = faker.random;
+const { arrayElements, arrayElement } = faker.random;
 const { email, url } = faker.internet;
 const { findName } = faker.name;
 const { companyName } = faker.company;
@@ -25,29 +25,27 @@ const demographic = [
 const keywords = ['Social', 'Party', 'Supper'];
 
 export const baseEvent = (): BaseSponsorEvent => {
+  const randomNumber: number = arrayElement([0, number({ min: 0, max: 50 })]);
   return {
-    budget: {
-      maximum: number({ min: 5000, max: 10000 }),
-      minimum: number({ min: 500, max: 5000 }),
-    },
+    budget: number({ min: 0, max: 10000 }),
     clicks: number({ min: 0, max: 100 }),
-    createdAt: Date.now() / 1000,
+    createdAt: Math.round(Date.now() / 1000),
     date: {
-      start: Date.now() / 1000 + ONE_DAY * number({ min: 0, max: 50 }),
-      end: Date.now() / 1000 + ONE_DAY * number({ min: 50, max: 100 }),
+      start: Math.round(Date.now() / 1000) + ONE_DAY * number({ min: 0, max: 50 }),
+      end: Math.round(Date.now() / 1000) + ONE_DAY * number({ min: 50, max: 100 }),
     },
     demographic: arrayElements(demographic, number({ min: 1, max: 6 })),
     documents: [imageUrl()],
     description: paragraph(3),
     eventSize: number({ min: 0, max: 100 }),
     keywords: arrayElements(keywords, number({ min: 1, max: 3 })),
-    matches: number({ min: 0, max: 50 }),
+    matches: randomNumber,
     picture: imageUrl(300, 300),
     subscribed: boolean(),
-    status: 'published',
+    status: randomNumber === 0 ? 'published' : 'matched',
     title: productName(),
     venue: department(),
-    pairs: number({ min: 0, max: 100 }),
+    pairs: number({ min: 0, max: randomNumber === 0 ? randomNumber : 100 }),
     requests: [
       {
         itemName: productName(),
@@ -101,7 +99,7 @@ export const eventOrganiser1Auth = {
 export const eventOrganiser2Auth = {
   uid: 'organiser2',
   ...baseProfile('EventOrganiser'),
-  email: 'organiser2@example.com',
+  email: 'huizhuansam8@gmail.com',
   role: 'EventOrganiser',
   email_verified: false,
 };
@@ -109,15 +107,33 @@ export const eventOrganiser2Auth = {
 export const sponsor1Auth = {
   uid: 'sponsor1',
   ...baseProfile('Sponsor'),
-  email: 'sponsor1@example.com',
+  email: 'clement.tee@comp.nus.edu.sg',
   role: 'Sponsor',
   email_verified: true,
+  subscription: {
+    budget: {
+      maximum: number({ min: 5000, max: 10000 }),
+      minimum: number({ min: 500, max: 5000 }),
+    },
+    eventSize: 50,
+    demographic: ['Adults', 'University/College', 'Teens'],
+  },
+  subscribed: true,
 };
 
 export const sponsor2Auth = {
   uid: 'sponsor2',
   ...baseProfile('Sponsor'),
-  email: 'sponsor2@example.com',
+  email: 'huizhuan@comp.nus.edu.sg',
   role: 'Sponsor',
   email_verified: false,
+  subscription: {
+    budget: {
+      maximum: number({ min: 5000, max: 10000 }),
+      minimum: number({ min: 500, max: 5000 }),
+    },
+    eventSize: 50,
+    demographic: ['Adults', 'University/College', 'Teens'],
+  },
+  subscribed: true,
 };
