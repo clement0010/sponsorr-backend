@@ -44,3 +44,9 @@ export const APP_BASE_URL =
   process.env.GCLOUD_PROJECT === 'sponsorr-dev'
     ? 'http://localhost:8080/'
     : 'https://sponsorr-prod.web.app/';
+
+/**
+ * Tolerance for numerical value in matching algorithm
+ */
+export const UPPER_TOLERANCE = 1.2;
+export const LOWER_TOLERANCE = 0.8;
