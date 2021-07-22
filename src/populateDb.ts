@@ -16,7 +16,6 @@ app.use(cors({ origin: true }));
 app.use(apiValidation);
 
 app.post('/', async (req: express.Request, res: express.Response) => {
-  // Grab the text parameter.
   log('info', 'Incoming populate db request');
   try {
     await Promise.all([
