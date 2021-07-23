@@ -1,6 +1,6 @@
 import { createHmac } from 'crypto';
 
-import { BASE_URL, EMAIL_SOURCE, LOWER_TOLERANCE, Status, UPPER_TOLERANCE } from './config';
+import { APP_BASE_URL, EMAIL_SOURCE, LOWER_TOLERANCE, Status, UPPER_TOLERANCE } from './config';
 import {
   Attachment,
   Budget,
@@ -77,7 +77,7 @@ export const generateWebhookHash = (email: string, uid: string, secret: string):
 
 export const generateWebhookUrl = (email: string, uid: string, secret: string): string => {
   const hash = generateWebhookHash(email, uid, secret);
-  return `${BASE_URL}confirmation?hash=${hash}&emailAddress=${email}&id=${uid}`;
+  return `${APP_BASE_URL}confirmation?hash=${hash}&emailAddress=${email}&id=${uid}`;
 };
 
 export const parseUserEventId = (userId: string, eventId: string): string => {

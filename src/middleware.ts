@@ -17,8 +17,12 @@ export const apiValidation = (req: Request, res: Response, next: NextFunction): 
 
 export const hashValidation = (req: Request, res: Response, next: NextFunction): void => {
   log('info', 'Incoming validate hash email request');
-  const { emailAddress, hash, id } = req.query;
+  const { emailAddress, hash, id } = req.body;
   const secret = config().admin.secret;
+
+  if (!emailAddress || !hash || !id) {
+    res.status(400).send({ error: 'Invalid payload' });
+  }
 
   const generatedHashKey = generateWebhookHash(emailAddress as string, id as string, secret);
 
