@@ -1,6 +1,13 @@
 import { createHmac } from 'crypto';
 
-import { APP_BASE_URL, EMAIL_SOURCE, LOWER_TOLERANCE, Status, UPPER_TOLERANCE } from './config';
+import {
+  APP_BASE_URL,
+  EMAIL_CC,
+  EMAIL_SOURCE,
+  LOWER_TOLERANCE,
+  Status,
+  UPPER_TOLERANCE,
+} from './config';
 import {
   Attachment,
   Budget,
@@ -24,6 +31,7 @@ export const buildEmailNotificationObject = (
   const emailObject: MatchedEmailNotificationObject = {
     from: EMAIL_SOURCE,
     toUids: [userId],
+    cc: EMAIL_CC,
     template: {
       name: 'matched',
       data: matchedEmailParams,
@@ -47,6 +55,7 @@ export const buildConfirmationEmailObject = (
   const emailObject: ConfirmationEmailObject = {
     from: EMAIL_SOURCE,
     toUids: [userId],
+    cc: EMAIL_CC,
     template: {
       name: 'confirmation',
       data: { username, webhookUrl },

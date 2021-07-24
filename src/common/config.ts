@@ -33,7 +33,12 @@ export enum EventStatusEnum {
   Matched = 'matched',
 }
 
-export const EMAIL_SOURCE = 'Sponsorr! <clement.jdp15@gmail.com>';
+export const EMAIL_SOURCE = 'Sponsorr! <support@sponsorr.me>';
+
+export const EMAIL_CC = [
+  'Clement Tee <clement.jdp15@gmail.com>',
+  'Hui Zhuan <huizhuansam8@gmail.com>',
+];
 
 export const BASE_URL =
   process.env.GCLOUD_PROJECT === 'sponsorr-dev'
@@ -41,9 +46,7 @@ export const BASE_URL =
     : 'https://asia-southeast2-sponsorr-prod.cloudfunctions.net/';
 
 export const APP_BASE_URL =
-  process.env.GCLOUD_PROJECT === 'sponsorr-dev'
-    ? 'http://localhost:8080/'
-    : 'https://sponsorr-prod.web.app/';
+  process.env.GCLOUD_PROJECT === 'sponsorr-dev' ? 'http://localhost:8080/' : 'https://sponsorr.me/';
 
 /**
  * Tolerance for numerical value in matching algorithm

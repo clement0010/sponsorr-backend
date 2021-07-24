@@ -18,6 +18,7 @@ interface Template {
 
 export interface MatchedEmailNotificationObject extends EmailIdentifier {
   template: Template;
+  cc: string[];
   message?: {
     attachments?: Attachment[];
   };
@@ -31,6 +32,7 @@ export interface MatchedEmailParams {
 }
 
 export interface ConfirmationEmailObject extends EmailIdentifier {
+  cc: string[];
   template: {
     name: string;
     data: {
