@@ -1,31 +1,35 @@
-import { region } from 'firebase-functions';
 import {
+  APP_BASE_URL,
   buildEmailNotificationObject,
   createEmailRequestToDb,
+  functions,
   getEventDetails,
   getUserDetails,
   log,
+  Match,
   Status,
+  updateEventPairCount,
   updateEventStatusToMatched,
 } from './common';
 
-export const matchingService = region('asia-southeast2')
-  .firestore.document('matches/{matchId}')
-  .onWrite(async (change) => {
-    log('info', 'Incoming matching service request', {
-      data: change.after.data(),
+export const matchNotificationService = functions.firestore
+  .document('matches/{matchId}')
+  .onCreate(async (item) => {
+    log('info', 'Incoming match notification request', {
+      data: item.data(),
     });
 
-    const newValue = change.after.data();
+    const newValue = item.data() as Match;
 
-    if (!newValue) return;
+    const { eventId, userId, sponsorStatus, organiserStatus, organiserId } = newValue;
 
-    const { eventId, userId, status, sponsorStatus, organiserStatus } = newValue;
-
+    // Cron Job matched
     if (sponsorStatus === Status.Pending && organiserStatus === Status.Pending) {
       const sponsorDetails = await getUserDetails(userId);
       const eventDetails = await getEventDetails(eventId);
-      const organiserDetails = await getUserDetails(eventDetails?.userId || '');
+      const organiserDetails = await getUserDetails(organiserId);
+
+      const eventUrl = `${APP_BASE_URL}event/${eventId}`;
 
       const sponsorEmailNotificationObject = buildEmailNotificationObject(
         userId || '',
@@ -33,6 +37,7 @@ export const matchingService = region('asia-southeast2')
           username: sponsorDetails?.name || '',
           sponsorName: sponsorDetails?.name || '',
           eventName: eventDetails?.title || '',
+          eventUrl,
         },
         {
           path: eventDetails?.documents[0] || '',
@@ -45,6 +50,7 @@ export const matchingService = region('asia-southeast2')
           username: organiserDetails?.name || '',
           sponsorName: sponsorDetails?.name || '',
           eventName: eventDetails?.title || '',
+          eventUrl,
         },
         {
           filename: 'Event Attachment.pdf',
@@ -56,16 +62,23 @@ export const matchingService = region('asia-southeast2')
       return;
     }
 
-    if (organiserStatus === Status.Pending) {
+    // Notify organiser about the match
+    if (sponsorStatus === Status.Accepted && organiserStatus === Status.Pending) {
+      await updateEventPairCount(eventId);
+
       const sponsorDetails = await getUserDetails(userId);
       const eventDetails = await getEventDetails(eventId);
+      const organiserDetails = await getUserDetails(eventDetails?.userId || '');
+
+      const eventUrl = `${APP_BASE_URL}event/${eventId}`;
 
       const emailNotificationObject = buildEmailNotificationObject(
         eventDetails?.userId || '',
         {
-          username: sponsorDetails?.name || '',
+          username: organiserDetails?.name || '',
           sponsorName: sponsorDetails?.name || '',
           eventName: eventDetails?.title || '',
+          eventUrl,
         },
         {
           path: eventDetails?.documents[0] || '',
@@ -76,9 +89,19 @@ export const matchingService = region('asia-southeast2')
       return;
     }
 
+    return;
+  });
+
+export const matchStatusTrigger = functions.firestore
+  .document('matches/{matchId}')
+  .onWrite(async (change) => {
+    if (change.before.data() === change.after.data()) return;
+    const newValue = change.after.data() as Match;
+
+    const { eventId, status } = newValue;
+
     if (status === Status.Accepted) {
       await updateEventStatusToMatched(eventId);
       return;
     }
-    return;
   });

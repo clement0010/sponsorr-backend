@@ -97,6 +97,17 @@ describe('Unit Testing Firebase rules', () => {
           }),
       );
     });
+
+    it('can be read by other users', async () => {
+      // Sponsor1 create her own user account
+      await firebase.assertSucceeds(
+        sponsor1.collection('users').doc(eventOrganiser1Auth.uid).get(),
+      );
+      // Event Organiser 1 create her own user account
+      await firebase.assertSucceeds(
+        eventOrganiser1.collection('users').doc(sponsor1Auth.uid).get(),
+      );
+    });
   });
 
   describe('Events', () => {
@@ -119,37 +130,30 @@ describe('Unit Testing Firebase rules', () => {
         }),
       );
 
-      // EventOrganiser2 successfully to create event
-      await firebase.assertSucceeds(
+      // EventOrganiser2 fail to create event because email not verified
+      await firebase.assertFails(
         eventOrganiser2Collection.doc('event2').set({
           ...seedEvents[1],
         }),
       );
 
-      // EventOrganiser2 can update her own cart with a new title
+      // EventOrganiser1 can update her own cart with a new title
       await firebase.assertSucceeds(
-        eventOrganiser2Collection.doc('event2').update({
+        eventOrganiser1Collection.doc('event1').update({
           title: 'Hello World',
-        }),
-      );
-
-      // EventOrganiser1 can't update EventOrganiser2's cart with a new title
-      await firebase.assertFails(
-        eventOrganiser1Collection.doc('event2').update({
-          title: 'Bye World',
         }),
       );
     });
 
-    it('can be read only by the event owner', async () => {
-      // Sponsor1 cannot read unmatched event
-      await firebase.assertFails(sponsor1Collection.doc('event1').get());
+    it('can be read only by anyone', async () => {
+      // Sponsor1 can read event
+      firebase.assertSucceeds(sponsor1Collection.doc('event1').get());
 
       // EventOrganiser1 can read her own event
       await firebase.assertSucceeds(eventOrganiser1Collection.doc('event1').get());
 
-      // EventOrganiser2 can't read EventOrganiser1's event
-      await firebase.assertFails(eventOrganiser2Collection.doc('event1').get());
+      // EventOrganiser2 can read EventOrganiser1's event
+      await firebase.assertSucceeds(eventOrganiser2Collection.doc('event1').get());
     });
   });
 });
