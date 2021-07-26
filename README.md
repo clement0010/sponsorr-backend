@@ -30,6 +30,7 @@ npm run fix:style:format to fix formatting with prettier
 ```
 
 ### Start firebase emulator
+
 ```
 npm run start:emulators
 ```
@@ -38,5 +39,5 @@ npm run start:emulators
 
 ```
 npm run test:dev
- 
+
 ```
